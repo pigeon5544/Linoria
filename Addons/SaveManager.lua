@@ -381,13 +381,13 @@ local SaveManager = {} do
 	end
 end
 
-if not Fondra.Ticks.Watermark then Fondra.Ticks.Watermark = tick() - 1 end
+if not Crypt.Ticks.Watermark then Crypt.Ticks.Watermark = tick() - 1 end
 
 Crypt.Services.RunService:BindToRenderStep("Watermark.lua", Enum.RenderPriority.Camera.Value + 1, function(Delta)
 	if not Toggles.CryptWatermarkUI.Value then return end
-    if (tick() - Fondra.Ticks.Watermark) <= 1 then return end
+    if (tick() - Crypt.Ticks.Watermark) <= 1 then return end
 
-    Fondra.Ticks.Watermark         			= tick()
+    Crypt.Ticks.Watermark         			= tick()
 
 	local Original 							= {}
     local List                         		= {}
