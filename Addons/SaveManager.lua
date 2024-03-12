@@ -381,38 +381,37 @@ local SaveManager = {} do
 	end
 end
 
-Crypt.Ticks.Watermark = tick() - 1
-if not Crypt.Ticks.Watermark then Crypt.Ticks.Watermark = tick() - 1 end
+-- if not Crypt.Ticks.Watermark then Crypt.Ticks.Watermark = tick() - 1 end
 
-Crypt.Services.RunService:BindToRenderStep("Watermark.lua", Enum.RenderPriority.Camera.Value + 1, function(Delta)
-	if not Toggles.CryptWatermarkUI.Value then return end
-    if (tick() - Crypt.Ticks.Watermark) <= 1 then return end
+-- Crypt.Services.RunService:BindToRenderStep("Watermark.lua", Enum.RenderPriority.Camera.Value + 1, function(Delta)
+-- 	if not Toggles.CryptWatermarkUI.Value then return end
+--     if (tick() - Crypt.Ticks.Watermark) <= 1 then return end
 
-    Crypt.Ticks.Watermark         			= tick()
+--     Crypt.Ticks.Watermark         			= tick()
 
-	local Original 							= {}
-    local List                         		= {}
-    local Result                        	= { "Crypt V4" }
+-- 	local Original 							= {}
+--     local List                         		= {}
+--     local Result                        	= { "Crypt V4" }
 
-	if not Options then return end
-	if not Options.CryptWatermarkData then return end
+-- 	if not Options then return end
+-- 	if not Options.CryptWatermarkData then return end
 
-	for Index, Name in next, Options.CryptWatermarkData:GetActiveValues() do
-		table.insert(Original, Name)
-	end
+-- 	for Index, Name in next, Options.CryptWatermarkData:GetActiveValues() do
+-- 		table.insert(Original, Name)
+-- 	end
 
-	for Index, Value in next, Original do
-        List[#Original + 1 - Index] 	= Value
-    end
+-- 	for Index, Value in next, Original do
+--         List[#Original + 1 - Index] 	= Value
+--     end
 
-    for Index, Value in next, List do
-        if (Value == "Version") then table.insert(Result, string.format("[%s]", Crypt.Loader.Version)) continue end
-        if (Value == "FPS") then table.insert(Result, string.format("%s FPS", math.floor(1 / Delta))) continue end
-        if (Value == "Ping") then table.insert(Result, string.format("%s MS", math.floor(Crypt.Services.Stats.Network.ServerStatsItem["Data Ping"]:GetValue()))) continue end
-    end
+--     for Index, Value in next, List do
+--         if (Value == "Version") then table.insert(Result, string.format("[%s]", Crypt.Loader.Version)) continue end
+--         if (Value == "FPS") then table.insert(Result, string.format("%s FPS", math.floor(1 / Delta))) continue end
+--         if (Value == "Ping") then table.insert(Result, string.format("%s MS", math.floor(Crypt.Services.Stats.Network.ServerStatsItem["Data Ping"]:GetValue()))) continue end
+--     end
 
-    Library:SetWatermark(table.concat(Result, " - "))
-end)
+--     Library:SetWatermark(table.concat(Result, " - "))
+-- end)
 
 getgenv().SaveManager = SaveManager
 
