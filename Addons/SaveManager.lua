@@ -381,6 +381,7 @@ local SaveManager = {} do
 	end
 end
 
+Crypt.Ticks.Watermark = tick() - 1
 if not Crypt.Ticks.Watermark then Crypt.Ticks.Watermark = tick() - 1 end
 
 Crypt.Services.RunService:BindToRenderStep("Watermark.lua", Enum.RenderPriority.Camera.Value + 1, function(Delta)
