@@ -262,7 +262,7 @@ local SaveManager = {} do
 				Text                    = "Main UI",
 				Default                 = true
 			}):AddKeyPicker("CryptMainUIKey", {
-				Default 				= "Insert",
+				Default 				= "LeftAlt",
 				SyncToggleState 		= true,
 				Mode 					= "Toggle",
 			
