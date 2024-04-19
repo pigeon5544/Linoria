@@ -1,3 +1,5 @@
+if Library then Library:Unload() end
+
 local InputService = game:GetService('UserInputService');
 local TextService = game:GetService('TextService');
 local CoreGui = game:GetService('CoreGui');
@@ -109,12 +111,6 @@ function Library:SafeCallback(f, ...)
         end;
 
         return Library:Notify(event:sub(i + 1), 3);
-    end;
-end;
-
-function Library:AttemptSave()
-    if Library.SaveManager then
-        Library.SaveManager:Save();
     end;
 end;
 
@@ -914,8 +910,6 @@ do
 
                     RenderStepped:Wait();
                 end;
-
-                Library:AttemptSave();
             end;
         end);
 
@@ -931,8 +925,6 @@ do
 
                     RenderStepped:Wait();
                 end;
-
-                Library:AttemptSave();
             end;
         end);
 
@@ -964,8 +956,6 @@ do
 
                         RenderStepped:Wait();
                     end;
-
-                    Library:AttemptSave();
                 end;
             end);
         end;
@@ -1048,7 +1038,7 @@ do
         local DisplayLabel = Library:CreateLabel({
             Size = UDim2.new(1, 0, 1, 0);
             TextSize = 13;
-            Text = Info.Default;
+            Text = (Info.Default == "Esc" and "???") or Info.Default;
             TextWrapped = true;
             ZIndex = 8;
             Parent = PickInner;
@@ -1134,7 +1124,6 @@ do
             Label.InputBegan:Connect(function(Input)
                 if Input.UserInputType == Enum.UserInputType.MouseButton1 then
                     ModeButton:Select();
-                    Library:AttemptSave();
                 end;
             end);
 
@@ -1152,9 +1141,9 @@ do
 
             local State = KeyPicker:GetState();
 
-            ContainerLabel.Text = string.format('[%s] %s (%s)', KeyPicker.Value, Info.Text, KeyPicker.Mode);
+            ContainerLabel.Text = string.format('[%s] %s [%s]', KeyPicker.Value, Info.Text, KeyPicker.Mode);
 
-            ContainerLabel.Visible = true;
+            ContainerLabel.Visible = KeyPicker.Value ~= "???";
             ContainerLabel.TextColor3 = State and Library.AccentColor or Library.FontColor;
 
             Library.RegistryMap[ContainerLabel].Properties.TextColor3 = State and 'AccentColor' or 'FontColor';
@@ -1256,7 +1245,7 @@ do
                     local Key;
 
                     if Input.UserInputType == Enum.UserInputType.Keyboard then
-                        Key = Input.KeyCode.Name;
+                        Key = Input.KeyCode.Name == "Escape" and "???" or Input.KeyCode.Name;
                     elseif Input.UserInputType == Enum.UserInputType.MouseButton1 then
                         Key = 'MB1';
                     elseif Input.UserInputType == Enum.UserInputType.MouseButton2 then
@@ -1272,8 +1261,6 @@ do
                     Library:SafeCallback(KeyPicker.ChangedCallback, Input.KeyCode or Input.UserInputType)
                     Library:SafeCallback(KeyPicker.Changed, Input.KeyCode or Input.UserInputType)
 
-                    Library:AttemptSave();
-
                     Event:Disconnect();
                 end);
             elseif Input.UserInputType == Enum.UserInputType.MouseButton2 and not Library:MouseIsOverOpenedFrame() then
@@ -1281,18 +1268,21 @@ do
             end;
         end);
 
-        Library:GiveSignal(InputService.InputBegan:Connect(function(Input)
+        Library:GiveSignal(InputService.InputBegan:Connect(function(Input, GameProccessed)
             if (not Picking) then
+                if GameProccessed then return end
+
                 if KeyPicker.Mode == 'Toggle' then
                     local Key = KeyPicker.Value;
 
                     if Key == 'MB1' or Key == 'MB2' then
-                        if Key == 'MB1' and Input.UserInputType == Enum.UserInputType.MouseButton1
-                        or Key == 'MB2' and Input.UserInputType == Enum.UserInputType.MouseButton2 then
+                        if Key == 'MB1' and Input.UserInputType == Enum.UserInputType.MouseButton1 or Key == 'MB2' and Input.UserInputType == Enum.UserInputType.MouseButton2 then
                             KeyPicker.Toggled = not KeyPicker.Toggled
                             KeyPicker:DoClick()
                         end;
                     elseif Input.UserInputType == Enum.UserInputType.Keyboard then
+                        if Key == "Esc" then return end
+
                         if Input.KeyCode.Name == Key then
                             KeyPicker.Toggled = not KeyPicker.Toggled;
                             KeyPicker:DoClick()
@@ -1750,12 +1740,10 @@ do
                 if not enter then return end
 
                 Textbox:SetValue(Box.Text);
-                Library:AttemptSave();
             end)
         else
             Box:GetPropertyChangedSignal('Text'):Connect(function()
                 Textbox:SetValue(Box.Text);
-                Library:AttemptSave();
             end);
         end
 
@@ -1926,14 +1914,14 @@ do
 
         ToggleRegion.InputBegan:Connect(function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 and not Library:MouseIsOverOpenedFrame() then
-                Toggle:SetValue(not Toggle.Value) -- Why was it not like this from the start?
-                Library:AttemptSave();
+                Toggle:SetValue(not Toggle.Value)
             end;
         end);
 
         if Toggle.Risky then
             Library:RemoveFromRegistry(ToggleLabel)
             ToggleLabel.TextColor3 = Library.RiskColor
+            ToggleLabel.Text = string.format("%s [!]", Info.Text)
             Library:AddToRegistry(ToggleLabel, { TextColor3 = 'RiskColor' })
         end
 
@@ -2095,6 +2083,28 @@ do
             return Round(Library:MapValue(X, 0, Slider.MaxSize, Slider.Min, Slider.Max));
         end;
 
+        function Slider:SetNumbers(Min, Max)
+            local Minimum = tonumber(Min);
+            local Maximum = tonumber(Max);
+
+            if (not Minimum) then
+                return;
+            end;
+
+            if (not Maximum) then
+                return;
+            end;
+
+            Slider.Min = Minimum;
+            Slider.Max = Maximum;
+            Slider.Value = math.clamp(Slider.Value, Slider.Min, Slider.Max);
+
+            Slider:Display();
+
+            Library:SafeCallback(Slider.Callback, Slider.Value);
+            Library:SafeCallback(Slider.Changed, Slider.Value);
+        end;
+
         function Slider:SetValue(Str)
             local Num = tonumber(Str);
 
@@ -2134,8 +2144,6 @@ do
 
                     RenderStepped:Wait();
                 end;
-
-                Library:AttemptSave();
             end;
         end);
 
@@ -2460,8 +2468,6 @@ do
 
                             Library:SafeCallback(Dropdown.Callback, Dropdown.Value);
                             Library:SafeCallback(Dropdown.Changed, Dropdown.Value);
-
-                            Library:AttemptSave();
                         end;
                     end;
                 end);
@@ -2836,8 +2842,6 @@ end;
 function Library:SetWatermark(Text)
     local X, Y = Library:GetTextBounds(Text, Library.Font, 14);
     Library.Watermark.Size = UDim2.new(0, X + 15, 0, (Y * 1.5) + 3);
-    Library:SetWatermarkVisibility(true)
-
     Library.WatermarkText.Text = Text;
 end;
 
